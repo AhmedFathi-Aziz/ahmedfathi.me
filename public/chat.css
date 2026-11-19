@@ -1,0 +1,51 @@
+
+#ai-chat{position:fixed;inset-inline-end:24px;bottom:24px;z-index:40;font-family:inherit;color:var(--ink)}
+.chat-launch{display:flex;align-items:center;gap:.6rem;border:0;border-radius:999px;padding:14px 20px;background:var(--accent);color:white;font:inherit;font-weight:650;box-shadow:0 8px 28px #15242e26;cursor:pointer}
+.chat-launch>span:first-child{font-size:1.4rem}
+.chat-panel{position:absolute;inset-inline-end:0;bottom:70px;width:390px;max-width:calc(100vw - 32px);height:min(580px,calc(100dvh - 120px));display:flex;flex-direction:column;background:white;border:1px solid var(--line);border-radius:18px;box-shadow:0 16px 56px #15242e30;overflow:hidden}
+.chat-panel[hidden]{display:none}
+.chat-head{background:var(--accent);color:white;padding:16px 18px;display:flex;align-items:center;justify-content:space-between;gap:12px}
+.chat-head strong{font-size:1rem}.chat-sub{display:block;font-size:.76rem;opacity:.9;margin-top:3px}
+.chat-close{background:transparent;border:0;color:white;font-size:28px;cursor:pointer;width:36px;height:36px}
+.chat-toolbar{display:flex;justify-content:space-between;align-items:center;padding:9px 16px;border-bottom:1px solid var(--line);font-size:.8rem}
+.chat-clear{border:0;background:transparent;color:var(--accent);font:inherit;cursor:pointer}.chat-contact{color:var(--accent)}
+.chat-messages{flex:1;min-height:80px;overflow:auto;padding:16px;display:flex;flex-direction:column;gap:12px}
+.chat-bubble{font-size:.9rem;line-height:1.7;padding:10px 13px;border-radius:12px;white-space:pre-wrap;overflow-wrap:anywhere;max-width:95%;flex-shrink:0}
+.chat-bubble.assistant{background:var(--wash);align-self:flex-start}.chat-bubble.user{background:var(--accent);color:white;align-self:flex-end}
+.chat-suggestions{padding:0 16px;display:flex;flex-wrap:wrap;gap:6px}.chat-suggestions button{font:inherit;font-size:.76rem;color:var(--accent);border:1px solid var(--line);border-radius:8px;background:white;padding:6px 9px;cursor:pointer}
+.chat-status{padding:5px 16px;font-size:.79rem;color:var(--muted)}
+.chat-form{display:flex;gap:7px;padding:8px 14px}.chat-form input{min-width:0;flex:1;font:inherit;font-size:.86rem;border:1px solid #aabcb5;border-radius:9px;padding:10px;background:white;color:var(--ink)}
+.chat-send{font:inherit;font-size:.86rem;background:var(--accent);color:white;border:0;border-radius:9px;padding:9px 13px;cursor:pointer}.chat-panel button:disabled{opacity:.55;cursor:wait}
+.chat-note{font-size:.68rem;color:var(--muted);padding:0 15px 12px;line-height:1.5}.chat-sr{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%)}
+.site-pet.is-following{bottom:100px}
+@media(max-width:480px){#ai-chat{inset-inline-end:16px;bottom:16px}.chat-panel{bottom:66px;width:calc(100vw - 32px)}.chat-launch{padding:12px 16px}}
+
+/* Use the original robot as the single live chat launcher. */
+#ai-chat-toggle,#ai-chat-panel{display:none!important}
+#ai-chat .chat-launch{padding:0;border:0;background:transparent;box-shadow:none;border-radius:12px;width:72px;height:82px;justify-content:center}
+.chat-launch picture,.chat-launch img{display:block;width:72px;height:auto;pointer-events:none}
+#ai-chat .chat-panel{bottom:94px}
+
+/* Keep the focus indicator inside the input and separated from Send. */
+#ai-chat .chat-form { gap:12px; }
+#ai-chat .chat-form input:focus,
+#ai-chat .chat-form input:focus-visible {
+ outline:none;
+ border-color:var(--accent);
+ box-shadow:inset 0 0 0 1px var(--accent);
+}
+#ai-chat .chat-send { flex-shrink:0; }
+#ai-chat .chat-launch { position:relative; }
+#ai-chat .robot-tooltip {
+ position:absolute;bottom:calc(100% + 10px);inset-inline-end:0;
+ padding:8px 12px;border-radius:8px;background:var(--ink);color:#fff;
+ font-size:13px;font-weight:500;line-height:1.4;white-space:nowrap;
+ box-shadow:0 4px 14px #15242e24;
+ opacity:0;visibility:hidden;pointer-events:none;transform:translateY(4px);
+ transition:opacity .15s,transform .15s,visibility .15s;
+}
+#ai-chat .chat-launch:hover .robot-tooltip,
+#ai-chat .chat-launch:focus-visible .robot-tooltip {
+ opacity:1;visibility:visible;transform:translateY(0);
+}
+@media(prefers-reduced-motion:reduce){#ai-chat .robot-tooltip{transition:none}}

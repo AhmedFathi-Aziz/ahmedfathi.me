@@ -1,0 +1,15 @@
+.articles { padding-block: clamp(2.5rem, 7vw, 5rem); }
+.article-list { margin-block-start: 2rem; border-top: 1px solid var(--line); }
+.article-list article { max-width: 48rem; padding-block: 2rem; }
+.article-list h2 { margin-block: .5rem; font-size: clamp(1.6rem, 4vw, 2.4rem); line-height: 1.2; }
+.publication-status { margin-block-start: 1.25rem; color: var(--muted); font-size: .9rem; }
+nav a[aria-current="page"] { color: var(--accent); text-decoration: underline; }
+
+.reading { max-width: 48rem; margin: 0 auto; padding-block: 2.5rem 4rem; overflow-wrap: anywhere; }
+.reading article { margin-top: 2rem; }
+.reading h1 { font-size: clamp(2.25rem,5vw,3.75rem); }
+.reading h2 { margin-block: 2rem .75rem; }
+.reading article p { margin-block: 1rem; line-height: 1.7; }
+.reading figure { margin: 1.5rem 0 2rem; }
+.reading img { display: block; max-width: 100%; height: auto; margin-inline: auto; }
+.reading figcaption { margin-top: .65rem; color: var(--muted); font-size: .92rem; }

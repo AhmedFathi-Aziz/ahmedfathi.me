@@ -1,0 +1,86 @@
+<!doctype html>
+<html lang="en">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="A Windows 11 forensic case study following a missing agreement from USB audit logs to verified recovery.">
+<title>A File Went Missing. What Can the Evidence Actually Prove? | Ahmed Fathi</title><link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800&display=swap" rel="stylesheet"><link rel="stylesheet" href="/styles.css?v=whatsapp-5"><script src="/i18n.js?v=articles-2" defer></script><link rel="stylesheet" href="/chat.css?v=robot-3"><link rel="stylesheet" href="/articles.css"></head>
+<body id="top">
+<a class="skip" href="#main">Skip to content</a>
+<header class="site-head"><div class="shell nav"><a class="wordmark" href="/#top">ahmed<span>fathi</span></a><nav aria-label="Main navigation"><a href="/#training">Training</a><a href="/#experience">Experience</a><a href="/#projects">Projects</a><a href="/articles" aria-current="page">Articles</a><a href="/#youtube">YouTube</a><a href="/#skills">Skills</a><a href="/#contact">Contact</a></nav><button id="language-toggle" class="button language-toggle" type="button" aria-label="Switch to Arabic" lang="ar">العربية</button></div></header>
+
+<main class="shell reading" id="main"><a class="back-link" href="/articles">All articles</a><article lang="en" dir="ltr">
+<h1>A File Went Missing. What Can the Evidence Actually Prove?</h1>
+<p>By Ahmed Fathi</p>
+<p>Minutes before a meeting, a contracts manager opens the Contracts folder on the team&#x27;s USB drive. The signed agreement he needs is missing. He remembers seeing Omar sitting at the office computer earlier that afternoon. &quot;Do you think Omar deleted it?&quot; he asks.</p>
+<p>I ask the manager for the filename. He gives me Signed-Agreement-104.docx. When was the agreement last seen, and what did Windows record against that exact name?</p>
+<p>I would start by finding the last time anyone could still see the agreement. That would narrow the search to a few minutes of activity on the shared computer. The Windows log could tell me which account accessed the document during that interval. The USB drive could answer the manager’s other question: could he get his signed copy back?</p>
+<figure>
+<a href="/articles/missing-agreement/figure-1-1.webp"><img loading="lazy" src="/articles/missing-agreement/figure-1-1.webp" width="669" height="347" alt="Figure 1. Where the agreement belonged"></a>
+<figcaption><strong>Figure 1. Where the agreement belonged</strong><br>The diagram places Signed-Agreement-104.docx in the Contracts folder on drive G:.</figcaption></figure>
+<h2>Identifying the missing agreement</h2>
+<p>I recreated this scenario on a Windows 11 computer with two local accounts and a USB drive. The screenshots show what Windows recorded during the exercise.</p>
+<figure>
+<a href="/articles/missing-agreement/figure-2-1.webp"><img loading="lazy" src="/articles/missing-agreement/figure-2-1.webp" width="1653" height="420" alt="Figure 2. The original document fingerprint"></a>
+<figcaption><strong>Figure 2. The original document fingerprint</strong><br>The hash tool identifies the document and its location. The full reference value is reproduced below for comparison.</figcaption></figure>
+<p>4c1414b51d36ca704d4d5fbd3a89d49c3a198756b67386ab0597ba9a35e24a46</p>
+<h2>What did Omar access?</h2>
+<p>The manager had seen Omar at the shared computer earlier that afternoon. I opened Event Viewer on that computer and filtered the Windows Security log for event 4663. At 15:05:18 on 18 November 2026, I found an entry under Omar&#x27;s account.</p>
+<figure>
+<a href="/articles/missing-agreement/figure-3-1.webp"><img loading="lazy" src="/articles/missing-agreement/figure-3-1.webp" width="1379" height="348" alt="Figure 3. The Windows Security log in Event Viewer"></a>
+<figcaption><strong>Figure 3. The Windows Security log in Event Viewer</strong><br>Open Windows Logs and select Security. Filter the current log for event 4663, then inspect the subject, object and access fields of the relevant record.</figcaption></figure>
+<figure>
+<a href="/articles/missing-agreement/figure-4-1.webp"><img loading="lazy" src="/articles/missing-agreement/figure-4-1.webp" width="1379" height="775" alt="Figure 4. Omar in the Security log"></a>
+<figcaption><strong>Figure 4. Omar in the Security log</strong><br>At 15:05:18, the Subject field identifies Omar as the account associated with this access.</figcaption></figure>
+<h2>Reading past the account name</h2>
+<p>I checked the Object Name field to see what Omar had accessed. The path ended at the Contracts folder. Under Accesses, Windows showed ReadData (or ListDirectory). For a folder, that means listing its contents. The Process Name field identified PowerShell.</p>
+<figure>
+<a href="/articles/missing-agreement/figure-5-1.webp"><img loading="lazy" src="/articles/missing-agreement/figure-5-1.webp" width="1161" height="556" alt="Figure 5. The audited folder path"></a>
+<figcaption><strong>Figure 5. The audited folder path</strong><br>The object Omar accessed. The Object Name path ends at \Contracts. Compare that with the full document path in Figure 8.</figcaption></figure>
+<figure>
+<a href="/articles/missing-agreement/figure-6-1.webp"><img loading="lazy" src="/articles/missing-agreement/figure-6-1.webp" width="1167" height="537" alt="Figure 6. The directory listing access right"></a>
+<figcaption><strong>Figure 6. The directory listing access right</strong><br>At 15:05:18, Windows recorded Omar’s account listing the contents of the Contracts folder through PowerShell. The audited path ends at the folder itself.</figcaption></figure>
+<h2>Was the agreement still there after Omar’s visit?</h2>
+<p>At 15:53:06, nearly 48 minutes after Omar listed the folder, a PowerShell check returned the agreement&#x27;s full path and its size of 13,446 bytes. The document was still on the drive after the recorded folder visit.</p>
+<figure>
+<a href="/articles/missing-agreement/figure-7-1.webp"><img loading="lazy" src="/articles/missing-agreement/figure-7-1.webp" width="1495" height="441" alt="Figure 7. The agreement was still present at 15:53"></a>
+<figcaption><strong>Figure 7. The agreement was still present at 15:53</strong><br>At 15:53:06, the agreement in the PowerShell output was still present at its original path and measured 13,446 bytes.</figcaption></figure>
+<h2>The entry that named the agreement</h2>
+<p>At 15:57:30, another 4663 entry contained a longer path. This one ended in Signed-Agreement-104.docx. I read the access field before checking the account name.</p>
+<figure>
+<a href="/articles/missing-agreement/figure-8-1.webp"><img loading="lazy" src="/articles/missing-agreement/figure-8-1.webp" width="1171" height="571" alt="Figure 8. The full filename in the audit record"></a>
+<figcaption><strong>Figure 8. The full filename in the audit record</strong><br>The agreement named in event 4663. This Object Name path continues past \Contracts and ends with Signed-Agreement-104.docx.</figcaption></figure>
+<figure>
+<a href="/articles/missing-agreement/figure-9-1.webp"><img loading="lazy" src="/articles/missing-agreement/figure-9-1.webp" width="1173" height="469" alt="Figure 9. Delete access on the agreement"></a>
+<figcaption><strong>Figure 9. Delete access on the agreement</strong><br>PowerShell used DELETE access, shown as access mask 0x10000, on the document identified in the same event.</figcaption></figure>
+<p>Under Subject, Windows identified the account as Fathi\Maya.</p>
+<figure>
+<a href="/articles/missing-agreement/figure-10-1.webp"><img loading="lazy" src="/articles/missing-agreement/figure-10-1.webp" width="1288" height="569" alt="Figure 10. The account behind the delete access"></a>
+<figcaption><strong>Figure 10. The account behind the delete access</strong><br>At 15:57:30, Windows recorded PowerShell using DELETE access on Signed-Agreement-104.docx under Maya&#x27;s account.</figcaption></figure>
+<h2>What can we tell the manager?</h2>
+<p>By 15:58:25, a check of the same path returned False. The agreement had disappeared from the location where the manager expected to find it.</p>
+<figure>
+<a href="/articles/missing-agreement/figure-11-1.webp"><img loading="lazy" src="/articles/missing-agreement/figure-11-1.webp" width="1287" height="247" alt="Figure 11. The agreement is absent from its original path"></a>
+<figcaption><strong>Figure 11. The agreement is absent from its original path</strong><br>Test-Path returned False. By 15:58:25, the document could no longer be found at that path.</figcaption></figure>
+<p>“The agreement was still on the drive at 15:53, nearly 48 minutes after Omar&#x27;s account listed the folder,” I told the manager. “At 15:57:30, Windows recorded delete access to the agreement under Maya&#x27;s account. I&#x27;d speak to Maya next to establish who was using that session.”</p>
+<p>The manager still needed the signed agreement for his meeting. Could we recover it from the USB drive?</p>
+<h2>Recovering the signed agreement</h2>
+<p>When a file is deleted, the file system can mark its space as available while some or all its contents remain on the drive. Further writes may reuse that space. My first question in FTK Imager was whether the Contracts folder still contained a deleted entry for the agreement. Finding its name would give me a candidate to extract. I would then need to check what had survived.</p>
+<figure>
+<a href="/articles/missing-agreement/deleted-space.png"><img loading="lazy" src="/articles/missing-agreement/deleted-space.png" width="1086" height="649" alt="Before and after deletion, the highlighted blocks retain the same data."></a>
+<figcaption><strong>Figure 12. The agreement is absent from its original path</strong><br>Why a deleted file may still be recoverable. After deletion, the drive reports 470 GB of free space, up from 320 GB. The highlighted blocks still contain the same data in both rows. The file system has marked that space as available for reuse, so the original data may survive until those blocks are overwritten.</figcaption></figure>
+<p>I opened the SanDisk USB drive in FTK Imager and browsed to the Contracts folder. Two deleted entries had the name I was looking for. One was empty. The other was 13,446 bytes, exactly the size recorded when the agreement was still present.</p>
+<figure>
+<a href="/articles/missing-agreement/figure-12-1.webp"><img loading="lazy" src="/articles/missing-agreement/figure-12-1.webp" width="1245" height="306" alt="Figure 13. Two entries for the missing agreement"></a>
+<figcaption><strong>Figure 13. Two entries for the missing agreement</strong><br>The Contracts folder contains two entries named Signed-Agreement-104.docx. Their sizes distinguish the empty entry from the recovery candidate.</figcaption></figure>
+<p>I selected the 13,446-byte entry and exported it. FTK Imager reported that it had copied all 13,446 bytes.</p>
+<figure>
+<a href="/articles/missing-agreement/export-results.png"><img loading="lazy" src="/articles/missing-agreement/export-results.png" width="477" height="249" alt="Figure 14. The export result"></a>
+<figcaption><strong>Figure 14. The export result</strong><br>FTK Imager reports one file exported successfully and 13,446 bytes copied.</figcaption></figure>
+<h2>Was it the same signed copy?</h2>
+<p>Two documents can have the same name and size even if a single digit in the contract has changed. SHA-256 calculates a fingerprint from the file’s contents, so that change would produce a different value. I had recorded the original fingerprint while the agreement was still on the drive. Now I could calculate the fingerprint of the exported file and compare the two.</p>
+<figure>
+<a href="/articles/missing-agreement/figure-14-1.webp"><img loading="lazy" src="/articles/missing-agreement/figure-14-1.webp" width="1918" height="195" alt="Figure 15. Verifying the recovered agreement"></a>
+<a href="/articles/missing-agreement/figure-14-2.webp"><img loading="lazy" src="/articles/missing-agreement/figure-14-2.webp" width="1918" height="154" alt="Figure 15. Verifying the recovered agreement"></a>
+<figcaption><strong>Figure 15. Verifying the recovered agreement</strong><br>Hash Tool shows the recovered document above. The verification field below contains the original SHA-256 fingerprint and reports a match.</figcaption></figure>
+<p>The fingerprints matched. I could give the manager his signed agreement back and show him how I knew it was the same file.</p>
+<p><a href="https://learn.microsoft.com/en-us/previous-versions/windows/it-pro/windows-10/security/threat-protection/auditing/event-4663">Technical reference: Microsoft Learn, Event 4663</a></p>
+</article></main></body></html>
