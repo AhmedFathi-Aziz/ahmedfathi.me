@@ -1,7 +1,5 @@
 import fs from 'node:fs/promises';
 import path from 'node:path';
-import { execFileSync } from 'node:child_process';
-execFileSync('python3', ['scripts/import_web_request.py'], { stdio: 'inherit' });
 const root=process.cwd(),assets={};
 const types={'.html':'text/html; charset=utf-8','.css':'text/css; charset=utf-8','.js':'text/javascript; charset=utf-8','.pdf':'application/pdf','.png':'image/png','.webp':'image/webp','.svg':'image/svg+xml','.jpg':'image/jpeg','.ico':'image/x-icon'};
 async function walk(dir,prefix=''){for(const d of await fs.readdir(dir,{withFileTypes:true})){const rel=prefix+'/'+d.name,full=path.join(dir,d.name);if(d.isDirectory())await walk(full,rel);else assets[rel]={type:types[path.extname(d.name)]||'application/octet-stream',body:(await fs.readFile(full)).toString('base64')}}}
