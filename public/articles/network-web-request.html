@@ -1,0 +1,110 @@
+<!doctype html>
+<html lang="en">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="A practical journey through switching, IP addressing, routing, DNS, and HTTPS during one web request.">
+<title>What Happens When You Type google.com into Your Browser? | Ahmed Fathi</title><link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800&display=swap" rel="stylesheet"><link rel="stylesheet" href="/styles.css?v=whatsapp-5"><script src="/i18n.js?v=articles-3" defer></script><link rel="stylesheet" href="/chat.css?v=robot-3"><link rel="stylesheet" href="/articles.css"></head>
+<body id="top">
+<a class="skip" href="#main">Skip to content</a>
+<header class="site-head"><div class="shell nav"><a class="wordmark" href="/#top">ahmed<span>fathi</span></a><nav aria-label="Main navigation"><a href="/#training">Training</a><a href="/#experience">Experience</a><a href="/#projects">Projects</a><a href="/articles" aria-current="page">Articles</a><a href="/#youtube">YouTube</a><a href="/#skills">Skills</a><a href="/#contact">Contact</a></nav><button id="language-toggle" class="button language-toggle" type="button" aria-label="Switch to Arabic" lang="ar">العربية</button></div></header>
+
+<main class="shell reading" id="main"><a class="back-link" href="/articles">All articles</a><article lang="en" dir="ltr">
+<h1>What Happens When You Type google.com into Your Browser?</h1>
+<p><strong>A Journey Through Computer Networking, DNS, HTTPS, and Web Communication</strong></p>
+<p>By Ahmed Fathi</p>
+
+<h2>Introduction</h2>
+<p>What actually happens between pressing Enter and seeing Google's homepage appear on the screen?</p>
+<p>To answer this question, we need to look beyond the browser. Imagine a computer connected to a local network through an Ethernet switch. The computer has an IP address, a default gateway, and a configured DNS resolver. Yet none of these details tells the browser what the Google homepage looks like.</p>
+<p>The browser must first identify the destination server. The operating system then determines how to send traffic beyond the local network, while routers forward packets toward their destination. Once communication is established, the browser exchanges HTTP messages with Google's infrastructure and processes the returned content.</p>
+<p>Each stage solves a different problem. By following one web request from the local network to the destination server, we can understand how switching, IP addressing, routing, DNS, and HTTPS work together.</p>
+
+<h2>1. Before Opening the Browser: Understanding the Local Network</h2>
+<p>Before a computer can communicate with a website on the Internet, it must first be connected to a properly configured network.</p>
+<p>Consider a local area network (LAN) containing several computers connected through an Ethernet switch and a router that provides access to external networks.</p>
+<p>Each device requires appropriate network configuration, including an IP address, subnet mask, and routing information. A DNS resolver is also needed to translate domain names into network addresses.</p>
+<p>These settings may be assigned automatically through DHCP or configured manually.</p>
+<figure>
+<a href="/articles/network-web-request/image1.png"><img loading="lazy" src="/articles/network-web-request/image1.png" width="1376" height="624" alt="Three computers share an Ethernet switch"></a>
+<figcaption><strong>Figure 1.</strong> Three computers share an Ethernet switch. Its MAC address table associates devices with switch ports.</figcaption>
+</figure>
+
+<h2>1.1 The Role of a Network Switch</h2>
+<figure>
+<a href="/articles/network-web-request/image2.gif"><img loading="lazy" src="/articles/network-web-request/image2.gif" width="800" height="454" alt="A frame leaves PC0 on a switched LAN"></a>
+<figcaption><strong>Figure 2.</strong> A Cisco Packet Tracer simulation shows a frame leaving PC0 on a three-computer switched LAN.</figcaption>
+</figure>
+<p>Imagine three computers connected to the same Ethernet switch. When PC1 sends data to PC2, how does the switch determine which port should receive the frame?</p>
+<p>The answer lies in the switch's MAC address table. As frames arrive, the switch learns the source MAC addresses and associates them with the ports on which they were received. It then uses this information to forward subsequent frames toward their intended destinations.</p>
+<p>In a conventional Ethernet network, a switch operates primarily at Layer 2 of the OSI model, commonly called the Data Link Layer.</p>
+<figure>
+<a href="/articles/network-web-request/image3.png"><img loading="lazy" src="/articles/network-web-request/image3.png" width="1354" height="643" alt="The first three OSI layers"></a>
+<figcaption><strong>Figure 3.</strong> The first three OSI layers carry bits, Ethernet frames, and IP packets. Switches use MAC addresses to forward frames, while routers use IP addresses to forward packets.</figcaption>
+</figure>
+<p>Each Ethernet interface has a MAC address, which is used for communication across the local network.</p>
+<p>When a switch receives an Ethernet frame, it examines the source MAC address and learns which port is associated with that address.</p>
+<p>The switch stores this information in a MAC address table, also known as a forwarding database.</p>
+<p>For example, a simplified table might contain:</p>
+<figure>
+<a href="/articles/network-web-request/image4.png"><img loading="lazy" src="/articles/network-web-request/image4.png" width="453" height="189" alt="The switch learned MAC addresses on VLAN 1"></a>
+<figcaption><strong>Figure 4.</strong> The switch has learned three MAC addresses on VLAN 1, one on each of ports Fa0/1, Fa0/2, and Fa0/3.</figcaption>
+</figure>
+<p>When a frame arrives, the switch checks its destination MAC address.</p>
+<p>If the destination is present in the forwarding table, the switch normally forwards the frame through the corresponding port.</p>
+<p>If the destination is unknown, the switch may flood the frame through other eligible ports in the same VLAN.</p>
+<p>This behavior allows Ethernet switches to forward local traffic efficiently without sending every known unicast frame to every connected device.</p>
+<p>However, a switch does not ordinarily determine how to reach remote Internet networks. That responsibility belongs to routing devices.</p>
+
+<h2>1.2 DHCP: How a Computer Obtains Network Configuration</h2>
+<p>When a computer joins a network, it usually requires several configuration parameters before it can communicate effectively.</p>
+<figure>
+<a href="/articles/network-web-request/image5.png"><img loading="lazy" src="/articles/network-web-request/image5.png" width="1347" height="694" alt="A PC3 DHCP lease exchange"></a>
+<figcaption><strong>Figure 5.</strong> PC3 obtains a DHCP lease through four messages: Discover, Offer, Request, and Acknowledgment.</figcaption>
+</figure>
+<p>These may include an IP address, subnet mask, default gateway, and DNS resolver addresses.</p>
+<p>Manually configuring every device would be inconvenient, particularly in networks with many computers.</p>
+<p>The Dynamic Host Configuration Protocol (DHCP) automates this process.</p>
+<p>A common DHCP address-allocation exchange follows four steps, collectively known as DORA:</p>
+<p><strong>Discover:</strong> The client broadcasts a DHCPDISCOVER message to locate available DHCP servers.<br>
+<strong>Offer:</strong> A DHCP server responds with a DHCPOFFER containing proposed configuration information.<br>
+<strong>Request:</strong> The client sends a DHCPREQUEST to indicate the configuration it wishes to use.<br>
+<strong>Acknowledgment:</strong> The server sends a DHCPACK confirming the allocation.</p>
+<p>DHCP can also assign a lease duration, defining how long the client may use the assigned configuration before renewal is required.</p>
+<p>For example, a computer might receive the following configuration:</p>
+<figure>
+<a href="/articles/network-web-request/image6.png"><img loading="lazy" src="/articles/network-web-request/image6.png" width="547" height="315" alt="An example DHCP lease"></a>
+<figcaption><strong>Figure 6.</strong> The example DHCP lease assigns 192.168.11.23 for 24 hours and supplies a subnet mask, a default gateway, and a DNS resolver.</figcaption>
+</figure>
+<p>These values are illustrative. Actual configuration depends on the network.</p>
+<p>The DHCP process is defined in RFC 2131 [1].</p>
+<p>Once the computer has obtained valid network settings, it can determine whether a destination is reachable locally or requires forwarding through a router.</p>
+
+<h2>1.3 The Default Gateway and Communication Outside the LAN</h2>
+<p>Suppose a computer has the IP address 192.168.23.100 with a subnet mask of 255.255.255.0.</p>
+<p>Its local IPv4 subnet is 192.168.23.0/24.</p>
+<figure>
+<a href="/articles/network-web-request/image7.png"><img loading="lazy" src="/articles/network-web-request/image7.png" width="1312" height="738" alt="A PC and Android device reach Google through the same gateway"></a>
+<figcaption><strong>Figure 7.</strong> A PC and an Android device reach Google through the same gateway. Network address translation lets both share one public IPv4 address.</figcaption>
+</figure>
+<p>When a computer needs to communicate with another device, it first determines whether the destination IP address belongs to its local subnet. If the destination is within the same subnet, the computer can communicate with it directly through the local network. However, if the destination is outside the local subnet, the computer typically forwards the traffic to its default gateway, which is responsible for routing the packets toward the destination network.</p>
+<p>However, Google servers are not normally part of the user's local subnet.</p>
+<p>The computer therefore consults its routing table and typically forwards traffic toward its default gateway.</p>
+<p>A default gateway is usually a router that provides connectivity to other networks.</p>
+<p>For IPv4 communication over Ethernet, the computer may use Address Resolution Protocol (ARP) to discover the MAC address of the next-hop router.</p>
+<p>The resulting Ethernet frame is delivered to the router, which processes the IP packet and forwards it toward the destination.</p>
+<p>An important distinction is that IP addresses identify logical communication endpoints, while Ethernet MAC addresses support delivery across an individual local network link.</p>
+
+<h2>2. DNS: How the Browser Finds google.com</h2>
+<p>After the computer has network connectivity, the user opens a browser and enters google.com.</p>
+<figure>
+<a href="/articles/network-web-request/image8.png"><img loading="lazy" src="/articles/network-web-request/image8.png" width="1074" height="724" alt="The client looks up google.com through DNS"></a>
+<figcaption><strong>Figure 8.</strong> The client looks up google.com through DNS, then uses the returned IP address to contact the web server.</figcaption>
+</figure>
+<p>The browser recognizes the text as a domain name and prepares to access the corresponding web service.</p>
+<p>However, Internet routing does not operate directly on human-readable domain names.</p>
+<p>To communicate with a remote server, the computer generally needs an IP address associated with the requested hostname.</p>
+<p>The Domain Name System (DNS) provides the distributed naming infrastructure used for this purpose.</p>
+<figure>
+<a href="/articles/network-web-request/image9.png"><img loading="lazy" src="/articles/network-web-request/image9.png" width="904" height="480" alt="A Windows nslookup query for google.com"></a>
+<figcaption><strong>Figure 9.</strong> A Windows nslookup query for google.com returns both an IPv6 address and an IPv4 address.</figcaption>
+</figure>
+</article></main></body></html>
